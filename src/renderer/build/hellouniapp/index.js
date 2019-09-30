@@ -2,7 +2,7 @@
 const Util = require('./lib/utils')
 const syncComponents = require('./lib/components')
 const syncPages = require('./lib/pages')
-const syncPagesJson = require('./lib/pagesJson')
+const syncPagesJson = require('./lib/pagesjson')
 
 const syncUniApp = (uniuiPath, uniappPath, vue) => {
   const util = Util.getInstance()
