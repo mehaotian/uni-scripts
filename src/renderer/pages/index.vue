@@ -12,7 +12,7 @@
             <Badge :text="item.edition" class="box-badge"></Badge>
           </p>
           <Button @click="open(item)">更新到插件市场</Button>
-          <Button class="button-right" @click="generate(item)">生成插件包</Button>
+          <Button class="button-right" type="primary" @click="generate(item)">生成插件包</Button>
         </div>
         <div v-if="item.update_log" v-html="item.update_log"></div>
         <div v-else>无最新更新记录</div>
@@ -123,11 +123,22 @@ export default {
       if (this.disabledTap) return
       const uniUi = this.historyList[0]
       const uniApp = this.historyList[1]
+      if (!uniApp.history[uniApp.select].lable) {
+        this.$Notice.error({
+          title: '请配置 hello uni-app 地址'
+        })
+        return
+      }
       syncUniApp(uniUi.history[uniUi.select].lable, uniApp.history[uniApp.select].lable, this)
     },
     open (item) {
-      console.log('更新到插件市场')
       const uniUi = this.historyList[0]
+      if (!uniUi.history[uniUi.select].lable) {
+        this.$Notice.error({
+          title: '请配置本地 uni-ui 地址'
+        })
+        return
+      }
       syncUniUi(uniUi.history[uniUi.select].lable, '', item, this)
     },
     generate (item) {
@@ -136,7 +147,12 @@ export default {
       }
       const uniUi = this.historyList[0]
       const extLocal = this.historyList[3]
-
+      if (!extLocal.history[extLocal.select].lable) {
+        this.$Notice.error({
+          title: '请配置本地插件包地址'
+        })
+        return
+      }
       syncUniUi(uniUi.history[uniUi.select].lable, extLocal.history[extLocal.select].lable, Object.assign({}, item, obj), this)
     },
     openWindows (href) {

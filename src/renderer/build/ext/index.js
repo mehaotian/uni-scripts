@@ -95,15 +95,16 @@ const syncComponents = (util, extLocalPath, options) => {
                 if (options.generate) {
                   console.log(extLocalPath)
                   const localComPath = util.pathjoin(extLocalPath, outName)
-                  util.copy(outZipPath, localComPath).then((topath) => {
-                    const uniuiDir = fs.readdirSync(topath)
-                    console.log(uniuiDir)
-                    uniuiDir.forEach((name) => {
-                      if (name.indexOf('.md') === -1 && name.indexOf('.zip') === -1) {
-                        fs.removeSync(util.pathjoin(topath, name))
-                      }
-                    })
+                  fs.copySync(outZipPath, localComPath)
+                  // util.copy(outZipPath, localComPath).then((topath) => {
+                  const uniuiDir = fs.readdirSync(localComPath)
+                  console.log(uniuiDir)
+                  uniuiDir.forEach((name) => {
+                    if (name.indexOf('.md') === -1 && name.indexOf('.zip') === -1) {
+                      fs.removeSync(util.pathjoin(localComPath, name))
+                    }
                   })
+                  // })
                 }
               })
             })

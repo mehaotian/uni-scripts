@@ -41,7 +41,6 @@ module.exports = (util) => {
         })
         return
       }
-      console.log(dest)
       util.readFile(name).then((dataFile) => {
         let result = ''
         // // 向示例里添加样式
