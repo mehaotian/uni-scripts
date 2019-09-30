@@ -1,21 +1,25 @@
 <template>
   <div class="wrapper">
     <Button icon="ios-search" @click="configFn">同步配置</Button>
-    <Button icon="ios-search">更新到文档</Button>
-    <Button icon="ios-search" @click="updateApp">更新到hello uni-app</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search">更新到文档</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateApp">更新到hello uni-app</Button>
     <!-- <Button icon="ios-search">更新到插件市场</Button> -->
-    <div class="uni-ui__card">
+    <div v-if="uniList.length > 0" class="uni-ui__card">
       <Card class="uni-ui__card-warp" v-for="(item,index) in uniList" :key="index">
         <div slot="title" class="uni-ui__card-box">
           <p class="uni-ui__card-box-content">
             <span class="content-href" @click="openWindows(item.path)">{{item.name}} {{item.desc}}</span>
             <Badge :text="item.edition" class="box-badge"></Badge>
           </p>
-          <Button @click="open">更新到插件市场</Button>
+          <Button @click="open(item)">更新到插件市场</Button>
+          <Button class="button-right" @click="generate(item)">生成插件包</Button>
         </div>
         <div v-if="item.update_log" v-html="item.update_log"></div>
         <div v-else>无最新更新记录</div>
       </Card>
+    </div>
+    <div v-else class="uni-ui__card-no-path">
+      请配置 uni-ui 的正确路径
     </div>
     <Modal v-model="modal" fullscreen title="uni-ui 同步配置项" @on-ok="ok">
       <div>
@@ -43,8 +47,8 @@
 </template>
 
 <script>
-// this.$electron.shell.openExternal(link) syncUniApp
-import { getFiles, syncUniApp } from '@/utils'
+//
+import {getFiles, syncUniApp, syncUniUi} from '@/utils'
 import { mapGetters } from 'vuex'
 // const fs = require('fs')
 export default {
@@ -68,6 +72,11 @@ export default {
           name: '本地文档地址',
           select: '',
           history: []
+        },
+        {
+          name: '生成本地插件包保存地址',
+          select: '',
+          history: []
         }
       ]
     }
@@ -77,9 +86,11 @@ export default {
   },
   created () {
     if (this.historyList.length > 0) {
-      this.formItem = Object.assign(JSON.parse(JSON.stringify(this.historyList)))
+      this.formItem = Object.assign(this.formItem, JSON.parse(JSON.stringify(this.historyList)))
     }
-    this.uniList = getFiles('/Users/mehaotian/Documents/GitProject/uni-ui')
+    const uniUi = this.formItem[0]
+    this.uniList = getFiles(uniUi.history[uniUi.select].lable)
+    console.log(this.formItem)
   },
   methods: {
     configFn () {
@@ -87,6 +98,8 @@ export default {
     },
     ok () {
       console.log('确定')
+      const uniUi = this.historyList[0]
+      this.uniList = getFiles(uniUi.history[uniUi.select].lable)
     },
     selectChange (e, item, index) {
       console.log(e, item, index)
@@ -108,13 +121,23 @@ export default {
     },
     updateApp () {
       if (this.disabledTap) return
-      console.log(this.historyList)
       const uniUi = this.historyList[0]
       const uniApp = this.historyList[1]
       syncUniApp(uniUi.history[uniUi.select].lable, uniApp.history[uniApp.select].lable, this)
     },
-    open () {
+    open (item) {
       console.log('更新到插件市场')
+      const uniUi = this.historyList[0]
+      syncUniUi(uniUi.history[uniUi.select].lable, '', item, this)
+    },
+    generate (item) {
+      const obj = {
+        generate: true
+      }
+      const uniUi = this.historyList[0]
+      const extLocal = this.historyList[3]
+
+      syncUniUi(uniUi.history[uniUi.select].lable, extLocal.history[extLocal.select].lable, Object.assign({}, item, obj), this)
     },
     openWindows (href) {
       this.$electron.shell.openExternal(href)
@@ -132,6 +155,10 @@ export default {
   &__card {
     &-warp {
       margin-top: 10px;
+    }
+    &-no-path {
+      text-align: center;
+      padding: 20px;
     }
     &-box {
       display: flex;
@@ -152,6 +179,9 @@ export default {
           font-size: 14px;
           margin-left: 10px;
         }
+      }
+      .button-right {
+        margin-left: 10px;
       }
     }
   }

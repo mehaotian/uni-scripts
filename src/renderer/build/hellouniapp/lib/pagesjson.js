@@ -1,0 +1,30 @@
+const beautify = require('js-beautify')
+
+module.exports = (util) => {
+  const pageJsonData = util.readFileSync('uniUiPagesJson').toString()
+  let outputPagesJsonData = util.readFileSync('uniAppPagesJson').toString()
+  const pagesJson = JSON.parse(pageJsonData)
+  pagesJson.pages.shift()
+  let examplePages = pagesJson.pages
+  let exampleSubPackages = {
+    'pages': []
+  }
+
+  examplePages.forEach(value => {
+    value.path = value.path.replace('pages/', '')
+    exampleSubPackages.pages.push(value)
+  })
+  // 替换uni-ui 的pages.json 到helli uni-app pages.json 的正确位置
+  outputPagesJsonData = outputPagesJsonData.replace(/"pages\/extUI"[\s\S]*"pages\/template"/, value => {
+    return `"pages/extUI" ,\n"pages":${JSON.stringify(exampleSubPackages.pages, '', 4)}},\n{\n"root" : "pages/template"`
+  })
+  outputPagesJsonData = beautify.js(outputPagesJsonData, {
+    indent_size: 4,
+    indent_with_tabs: true
+  })
+  util.outputFile('uniAppPagesJson', outputPagesJsonData).then(() => {
+    util.vue.$Message.success({
+      content: 'pages.json 同步成功'
+    })
+  })
+}

@@ -3,7 +3,12 @@ const fs = require('fs-extra')
 const glob = require('glob')
 
 function transform (loaclPath) {
-  const inputFile = path.join(loaclPath, './src/components')
+  const inputFile = path.join(loaclPath, 'src', 'components')
+
+  const exists = fs.existsSync(inputFile)
+  if (!exists) {
+    return []
+  }
   const vueFiles = glob.sync(inputFile + '/**/*.json')
   let content = []
   vueFiles.forEach(name => {
