@@ -39,7 +39,9 @@ module.exports = (util) => {
           })
           util.outputFile('outputTabBarFile', result)
         })
+        return
       }
+      console.log(dest)
       util.readFile(name).then((dataFile) => {
         let result = ''
         // // 向示例里添加样式
