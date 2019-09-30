@@ -2,7 +2,6 @@
 
 import { app, BrowserWindow } from 'electron'
 import pkg from '../../package.json'
-import uploader from './utils/uploader.js'
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -20,8 +19,6 @@ const winURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html`
 
 function createWindow () {
-  uploader()
-
   /**
    * Initial window options
    */
