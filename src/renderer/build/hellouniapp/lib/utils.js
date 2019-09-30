@@ -16,7 +16,7 @@ class Utils {
   }
   init (uniuiPath, uniappPath, vue) {
     this.path = {
-      tempCatalog: path.join(__dirname, '..', 'temp'),
+      tempCatalog: path.join(uniuiPath, 'temp', 'build_uniapp'),
       // hello uni-app 本地 static 完整地址
       outputStaticFile: path.join(uniappPath, 'static'),
       // uni-ui 本地 static 完整地址
@@ -36,7 +36,7 @@ class Utils {
       // hello uni-app tabbar 示例页面
       outputTabBarFile: path.join(uniappPath, 'pages', 'tabBar', 'extUI', 'extUI.nvue'),
       // tabbar 输入 示例页面
-      inputTabBarFile: path.join(__dirname, '..', 'extUI.nvue'),
+      inputTabBarFile: path.join(uniuiPath, 'temp', 'extUI.nvue'),
       // uni-ui 全局 sass 变量文件
       uniScss: path.join(uniuiPath, 'src', 'uni.scss')
     }
@@ -75,6 +75,7 @@ class Utils {
     return new Promise((resolve, reject) => {
       fs.copy(this.path[frompath] || frompath, this.path[topath] || topath, (err) => {
         if (err) {
+          console.log('----', this.path[frompath] || frompath, this.path[topath] || topath)
           reject(new Error(err))
           return
         }

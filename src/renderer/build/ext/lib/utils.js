@@ -16,8 +16,8 @@ class Utils {
   }
   init (uniuiPath, vue) {
     this.path = {
-      tempCatalog: path.join(__dirname, '..', 'temp'),
-      exampleCatalog: path.join(__dirname, 'example'),
+      tempCatalog: path.join(uniuiPath, 'temp', 'build_ext'),
+      exampleCatalog: path.join(uniuiPath, 'temp', 'example'),
       // uni-ui 本地 static 完整地址
       uniUiStaticFile: path.join(uniuiPath, 'src', 'static'),
       // uni-ui 本地 /src/pages 完整地址
