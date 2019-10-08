@@ -5,8 +5,9 @@ const Util = require('./lib/utils')
 const postCss = require('@/build/lib/postcss')
 const ZIP = require('@/build/lib/jszip')
 const beautify = require('js-beautify')
-
-// const syncComponents = require('./lib/components')
+const crypto = require('crypto')
+const axios = require('axios')
+var FormData = require('form-data')
 
 const syncComponents = (util, extLocalPath, options) => {
   let vueFiles = glob.sync(util.path.uniUiComponentsFiles + '/**/*.json')
@@ -105,7 +106,52 @@ const syncComponents = (util, extLocalPath, options) => {
                     }
                   })
                   // })
+                  return
                 }
+                // 上传插件市场
+                console.log('上传插件市场')
+                const t = new Date().getTime() // 获取时间戳
+                const pluginPackage = util.pathjoin('tempCatalog', 'components.zip') // 组件包
+                const pluginExample = util.pathjoin('tempCatalog', `/uni-${options.url}.zip`) // 示例包
+                const pluginMd = util.pathjoin('tempCatalog', 'readme.md')// readme.md
+                let sign = `id=${options.id}&t=${t}&version=${options.edition}&key=mUfEvHMR3p9BPwnl` // 获取 sign 签名
+                sign = crypto.createHash('md5').update(sign).digest('hex')
+                const url = 'https://ext.dcloud.net.cn/publish/internal'
+                //   // const url = 'http://t.ext.dcloud.net.cn/publish/internal'
+                let form = new FormData()
+                //   // form.append('id', 20);
+                form.append('id', options.id)
+                form.append('version', options.edition)
+                form.append('t', t)
+                form.append('sign', sign)
+                form.append('plugin_package', fs.createReadStream(pluginPackage))
+                form.append('plugin_example', fs.createReadStream(pluginExample))
+                form.append('plugin_md', fs.createReadStream(pluginMd))
+                form.append('update_log', options.update_log)
+                console.log(form)
+                axios({
+                  method: 'post',
+                  url: url,
+                  headers: {
+                    'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
+                  },
+                  data: form
+                }).then((res) => {
+                  console.log('请求成功')
+                  console.log(res.status)
+                  console.log(res.data)
+                }).catch((error) => {
+                  console.log('请求失败')
+                  if (error.response) {
+                    // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+                    console.log(error.response.data)
+                    console.log(error.response.status)
+                    console.log(error.response.headers)
+                  } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message)
+                  }
+                })
               })
             })
           }
