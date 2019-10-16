@@ -87,9 +87,10 @@ const syncComponents = (util, extLocalPath, options) => {
             const inputZipComPath = util.pathjoin('tempCatalog', 'components')
             const inputZipPagePath = util.pathjoin('tempCatalog', outName)
             const outZipPath = util.path.tempCatalog
-
+            console.log(inputZipComPath, outZipPath)
             // 输出 components zip 包
             ZIP(inputZipComPath, outZipPath, 'components').then(() => {
+              console.log(inputZipPagePath, outZipPath, outName)
               ZIP(inputZipPagePath, outZipPath, outName).then(() => {
                 console.log('生成 zip 成功')
                 // 生成本地插件包，存放到本地
@@ -99,7 +100,7 @@ const syncComponents = (util, extLocalPath, options) => {
                   fs.copySync(outZipPath, localComPath)
                   // util.copy(outZipPath, localComPath).then((topath) => {
                   const uniuiDir = fs.readdirSync(localComPath)
-                  console.log(uniuiDir)
+                  // console.log(uniuiDir)
                   uniuiDir.forEach((name) => {
                     if (name.indexOf('.md') === -1 && name.indexOf('.zip') === -1) {
                       fs.removeSync(util.pathjoin(localComPath, name))
