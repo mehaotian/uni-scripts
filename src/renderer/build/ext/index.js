@@ -1,13 +1,15 @@
 const glob = require('glob')
 const path = require('path')
+// const qs = require('qs')
 const fs = require('fs-extra')
 const Util = require('./lib/utils')
 const postCss = require('@/build/lib/postcss')
 const ZIP = require('@/build/lib/jszip')
 const beautify = require('js-beautify')
 const crypto = require('crypto')
-const axios = require('axios')
-var FormData = require('form-data')
+// const axios = require('axios')
+const request = require('request')
+// var FormData = require('form-data')
 
 const syncComponents = (util, extLocalPath, options) => {
   let vueFiles = glob.sync(util.path.uniUiComponentsFiles + '/**/*.json')
@@ -119,40 +121,119 @@ const syncComponents = (util, extLocalPath, options) => {
                 sign = crypto.createHash('md5').update(sign).digest('hex')
                 const url = 'https://ext.dcloud.net.cn/publish/internal'
                 //   // const url = 'http://t.ext.dcloud.net.cn/publish/internal'
-                let form = new FormData()
+                // let form = new FormData()
                 //   // form.append('id', 20);
-                form.append('id', options.id)
-                form.append('version', options.edition)
-                form.append('t', t)
-                form.append('sign', sign)
-                form.append('plugin_package', fs.createReadStream(pluginPackage))
-                form.append('plugin_example', fs.createReadStream(pluginExample))
-                form.append('plugin_md', fs.createReadStream(pluginMd))
-                form.append('update_log', options.update_log)
-                console.log(form)
-                axios({
-                  method: 'post',
-                  url: url,
-                  headers: {
-                    'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
-                  },
-                  data: form
-                }).then((res) => {
-                  console.log('请求成功')
-                  console.log(res.status)
-                  console.log(res.data)
-                }).catch((error) => {
-                  console.log('请求失败')
-                  if (error.response) {
-                    // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-                    console.log(error.response.data)
-                    console.log(error.response.status)
-                    console.log(error.response.headers)
-                  } else {
-                    // Something happened in setting up the request that triggered an Error
-                    console.log('Error', error.message)
+                // form.append('id', options.id)
+                // form.append('version', options.edition)
+                // form.append('t', t)
+                // form.append('sign', sign)
+                // form.append('plugin_package', fs.createReadStream(pluginPackage))
+                // form.append('plugin_example', fs.createReadStream(pluginExample))
+                // form.append('plugin_md', fs.createReadStream(pluginMd))
+                // form.append('update_log', options.update_log)
+
+                const formData = {
+                  id: options.id,
+                  version: options.edition,
+                  t: t,
+                  sign: sign,
+                  plugin_package: fs.createReadStream(pluginPackage),
+                  plugin_example: fs.createReadStream(pluginExample),
+                  plugin_md: fs.createReadStream(pluginMd),
+                  update_log: options.update_log
+                }
+
+                request.post({url: url, formData: formData}, function (err, httpResponse, body) {
+                  if (err) {
+                    return console.error('upload failed:', err)
                   }
+                  let res = JSON.parse(body)
+                  if (res.ret === 0) {
+                    util.vue.$Modal.success({
+                      title: '提示',
+                      content: res.desc
+                    })
+                  } else {
+                    util.vue.$Modal.error({
+                      title: '提示',
+                      content: res.desc
+                    })
+                  }
+                  console.log(res)
                 })
+
+                // const formHeaders = form.getHeaders()
+                // axios.post(url, form, {
+                //   headers: {
+                //     ...formHeaders
+                //   }
+                // })
+                //   .then(response => {
+                //     console.log(response)
+                //   })
+                //   .catch(error => {
+                //     console.log(error)
+                //   })
+
+                // const instance = axios.create({
+                //   timeout: 6000
+                //   // headers: {
+                //   //   'Content-Type': 'multipart/form-data;charset=UTF-8'
+                //   // }
+                // })
+                // instance.interceptors.request.use(
+                //   config => {
+                //     config.data = qs.stringify(config.data) // 转为formdata数据格式
+                //     console.log(config.data)
+
+                //     return config
+                //   },
+                //   error => Promise.error(error)
+                // )
+                // instance.post(url, form).then((res) => {
+                //   console.log('请求成功')
+                //   console.log(res.status)
+                //   console.log(res.data)
+                // }).catch((error) => {
+                //   console.log('请求失败')
+                //   if (error.response) {
+                //     // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+                //     console.log(error.response.data)
+                //     console.log(error.response.status)
+                //     console.log(error.response.headers)
+                //   } else {
+                //     // Something happened in setting up the request that triggered an Error
+                //     console.log('Error', error.message)
+                //   }
+                // })
+                // axios({
+                //   method: 'post',
+                //   url: url,
+                //   // headers: {
+                //   //   'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
+                //   // },
+                //   // headers: {
+                //   //   'Content-Type': 'multipart/form-data'
+                //   // },
+                //   // processData: false, // 告诉axios不要去处理发送的数据(重要参数)
+                //   // contentType: false, // 告诉axios不要去设置Content-Type请求头
+                //   data: form
+                // }).then((res) => {
+                //   console.log('请求成功')
+                //   console.log(res.status)
+                //   console.log(res.data)
+                // }).catch((error) => {
+                //   console.log('请求失败')
+                //   if (error.response) {
+                //     // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+                //     console.log(error.response.data)
+                //     console.log(error.response.status)
+                //     console.log(error.response.headers)
+                //   } else {
+                //     // Something happened in setting up the request that triggered an Error
+                //     console.log('Error', error.message)
+                //   }
+                // })
               })
             })
           }
