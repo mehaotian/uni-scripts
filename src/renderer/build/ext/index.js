@@ -7,7 +7,6 @@ const postCss = require('@/build/lib/postcss')
 const ZIP = require('@/build/lib/jszip')
 const beautify = require('js-beautify')
 const crypto = require('crypto')
-// const axios = require('axios')
 const request = require('request')
 // var FormData = require('form-data')
 
@@ -27,10 +26,12 @@ const syncComponents = (util, extLocalPath, options) => {
   const outIndexPages = util.pathjoin(outUniAppPath, 'pages', filesData[filesIndex].url)
   // 0. 如果存在临时目录，那么就删除重新创建
   util.exists(util.path.tempCatalog).then((exists) => {
-  // 1. 将示例工程拷贝到临时目录，等待处理
-    util.copy('exampleCatalog', outUniAppPath).then(() => {
-    // 2. 处理组件示例入口 index.vue 文件
+    console.log('删除目录重新创建')
+    console.log(outUniAppPath)
 
+    // 1. 将示例工程拷贝到临时目录，等待处理
+    util.copy('exampleCatalog', outUniAppPath).then(() => {
+      // 2. 处理组件示例入口 index.vue 文件
       fs.copySync(inputIndexPages, outIndexPages)
       let pagesIndexData = glob.sync(outIndexPages + '/**/*.{nvue,vue}')
       pagesIndexData.forEach((item) => {
@@ -71,9 +72,9 @@ const syncComponents = (util, extLocalPath, options) => {
             const readme = util.pathjoin('uniUiComponentsFiles', name, 'readme.md')
             const tempReadme = util.pathjoin('tempCatalog', 'readme.md')
             fs.copySync(uniuiPath, tempPath)
-            util.vue.$Message.success({
-              content: '组件同步成功'
-            })
+            // util.vue.$Message.success({
+            //   content: '组件同步成功'
+            // })
             _screenComponents(util, tempPath, tempComPath)
             // 删除多余无用文件
             const delFileLists = glob.sync(tempComPath + '/**/*.{json,md,bak}')
@@ -120,17 +121,6 @@ const syncComponents = (util, extLocalPath, options) => {
                 let sign = `id=${options.id}&t=${t}&version=${options.edition}&key=mUfEvHMR3p9BPwnl` // 获取 sign 签名
                 sign = crypto.createHash('md5').update(sign).digest('hex')
                 const url = 'https://ext.dcloud.net.cn/publish/internal'
-                //   // const url = 'http://t.ext.dcloud.net.cn/publish/internal'
-                // let form = new FormData()
-                //   // form.append('id', 20);
-                // form.append('id', options.id)
-                // form.append('version', options.edition)
-                // form.append('t', t)
-                // form.append('sign', sign)
-                // form.append('plugin_package', fs.createReadStream(pluginPackage))
-                // form.append('plugin_example', fs.createReadStream(pluginExample))
-                // form.append('plugin_md', fs.createReadStream(pluginMd))
-                // form.append('update_log', options.update_log)
 
                 const formData = {
                   id: options.id,
@@ -142,98 +132,43 @@ const syncComponents = (util, extLocalPath, options) => {
                   plugin_md: fs.createReadStream(pluginMd),
                   update_log: options.update_log
                 }
-
-                request.post({url: url, formData: formData}, function (err, httpResponse, body) {
-                  if (err) {
-                    return console.error('upload failed:', err)
-                  }
-                  let res = JSON.parse(body)
-                  if (res.ret === 0) {
-                    util.vue.$Modal.success({
-                      title: '提示',
-                      content: res.desc
+                util.vue.$Modal.confirm({
+                  title: '提示',
+                  content: '是否上传插件市场？',
+                  loading: true,
+                  onOk: () => {
+                    request.post({url: url, formData: formData}, function (err, httpResponse, body) {
+                      util.vue.$Modal.remove()
+                      if (err) {
+                        return console.error('upload failed:', err)
+                      }
+                      let res = null
+                      try {
+                        res = JSON.parse(body)
+                      } catch (error) {
+                        console.log(error)
+                        res = {
+                          ret: 201,
+                          desc: '提交失败，请刷新重试'
+                        }
+                      }
+                      console.log(res)
+                      console.log(httpResponse)
+                      if (res.ret === 0) {
+                        util.vue.$Notice.success({
+                          title: '提示',
+                          desc: res.desc
+                        })
+                      } else {
+                        util.vue.$Notice.error({
+                          title: '提示',
+                          desc: res.desc
+                        })
+                      }
+                      console.log(res)
                     })
-                  } else {
-                    util.vue.$Modal.error({
-                      title: '提示',
-                      content: res.desc
-                    })
                   }
-                  console.log(res)
                 })
-
-                // const formHeaders = form.getHeaders()
-                // axios.post(url, form, {
-                //   headers: {
-                //     ...formHeaders
-                //   }
-                // })
-                //   .then(response => {
-                //     console.log(response)
-                //   })
-                //   .catch(error => {
-                //     console.log(error)
-                //   })
-
-                // const instance = axios.create({
-                //   timeout: 6000
-                //   // headers: {
-                //   //   'Content-Type': 'multipart/form-data;charset=UTF-8'
-                //   // }
-                // })
-                // instance.interceptors.request.use(
-                //   config => {
-                //     config.data = qs.stringify(config.data) // 转为formdata数据格式
-                //     console.log(config.data)
-
-                //     return config
-                //   },
-                //   error => Promise.error(error)
-                // )
-                // instance.post(url, form).then((res) => {
-                //   console.log('请求成功')
-                //   console.log(res.status)
-                //   console.log(res.data)
-                // }).catch((error) => {
-                //   console.log('请求失败')
-                //   if (error.response) {
-                //     // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-                //     console.log(error.response.data)
-                //     console.log(error.response.status)
-                //     console.log(error.response.headers)
-                //   } else {
-                //     // Something happened in setting up the request that triggered an Error
-                //     console.log('Error', error.message)
-                //   }
-                // })
-                // axios({
-                //   method: 'post',
-                //   url: url,
-                //   // headers: {
-                //   //   'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
-                //   // },
-                //   // headers: {
-                //   //   'Content-Type': 'multipart/form-data'
-                //   // },
-                //   // processData: false, // 告诉axios不要去处理发送的数据(重要参数)
-                //   // contentType: false, // 告诉axios不要去设置Content-Type请求头
-                //   data: form
-                // }).then((res) => {
-                //   console.log('请求成功')
-                //   console.log(res.status)
-                //   console.log(res.data)
-                // }).catch((error) => {
-                //   console.log('请求失败')
-                //   if (error.response) {
-                //     // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-                //     console.log(error.response.data)
-                //     console.log(error.response.status)
-                //     console.log(error.response.headers)
-                //   } else {
-                //     // Something happened in setting up the request that triggered an Error
-                //     console.log('Error', error.message)
-                //   }
-                // })
               })
             })
           }
@@ -318,9 +253,9 @@ const _HandlePages = (util, dataFile, item, name) => {
     })
   }
   fs.outputFileSync(item, result)
-  util.vue.$Message.success({
-    content: '首页同步成功'
-  })
+  // util.vue.$Message.success({
+  //   content: '首页同步成功'
+  // })
 }
 
 /**

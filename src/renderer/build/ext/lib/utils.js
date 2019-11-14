@@ -63,6 +63,7 @@ class Utils {
    */
   copy (frompath, topath) {
     return new Promise((resolve, reject) => {
+      console.log(this.path[frompath] || frompath, this.path[topath] || topath)
       fs.copy(this.path[frompath] || frompath, this.path[topath] || topath, (err) => {
         if (err) {
           reject(new Error(err))
