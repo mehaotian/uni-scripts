@@ -1,8 +1,13 @@
+/* eslint-disable vue/no-parsing-error */
+/* eslint-disable standard/object-curly-even-spacing */
 <template>
   <div class="wrapper">
     <Button icon="ios-search" @click="configFn">同步配置</Button>
-    <Button v-if="uniList.length > 0" icon="ios-search">更新到文档</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateDocument">更新到文档</Button>
     <Button v-if="uniList.length > 0" icon="ios-search" @click="updateApp">更新到hello uni-app</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateUniUi(false)">更新到uni-ui到插件市场</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateUniUi(true)">生成uni-ui插件包</Button>
+
     <!-- <Button icon="ios-search">更新到插件市场</Button> -->
     <div v-if="uniList.length > 0" class="uni-ui__card">
       <Card class="uni-ui__card-warp" v-for="(item,index) in uniList" :key="index">
@@ -18,16 +23,18 @@
         <div v-else>无最新更新记录</div>
       </Card>
     </div>
-    <div v-else class="uni-ui__card-no-path">
-      请配置 uni-ui 的正确路径
-    </div>
+    <div v-else class="uni-ui__card-no-path">请配置 uni-ui 的正确路径</div>
     <Modal v-model="modal" fullscreen title="uni-ui 同步配置项" @on-ok="ok">
       <div>
         <Form :label-width="150">
           <FormItem :label="item.name" v-for="(item,index) in formItem" :key="index">
             <Row>
               <Col span="20">
-                <Select v-model="item.select" not-found-text="请选择目录" @on-change="selectChange($event,item,index)">
+                <Select
+                  v-model="item.select"
+                  not-found-text="请选择目录"
+                  @on-change="selectChange($event,item,index)"
+                >
                   <Option
                     :value="history.value"
                     v-for="(history , idx) in item.history"
@@ -47,8 +54,7 @@
 </template>
 
 <script>
-//
-import {getFiles, syncUniApp, syncUniUi} from '@/utils'
+import {getFiles, syncUniApp, syncUniUi, completeUuiUi} from '@/utils'
 import { mapGetters } from 'vuex'
 // const fs = require('fs')
 export default {
@@ -86,7 +92,10 @@ export default {
   },
   created () {
     if (this.historyList.length > 0) {
-      this.formItem = Object.assign(this.formItem, JSON.parse(JSON.stringify(this.historyList)))
+      this.formItem = Object.assign(
+        this.formItem,
+        JSON.parse(JSON.stringify(this.historyList))
+      )
     }
     const uniUi = this.formItem[0]
     this.uniList = getFiles(uniUi.history[uniUi.select].lable)
@@ -105,7 +114,10 @@ export default {
       console.log(e, item, index)
       this.formItem[index].select = e
       this.$set(this.formItem, index, item)
-      this.$store.dispatch('app/setHistory', Object.assign(JSON.parse(JSON.stringify(this.formItem))))
+      this.$store.dispatch(
+        'app/setHistory',
+        Object.assign(JSON.parse(JSON.stringify(this.formItem)))
+      )
     },
     openFilesFn (item, index) {
       const dialog = this.$electron.remote.dialog.showOpenDialog({
@@ -117,7 +129,10 @@ export default {
       })
       this.formItem[index].select = item.history.length - 1
       this.$set(this.formItem, index, item)
-      this.$store.dispatch('app/setHistory', Object.assign(JSON.parse(JSON.stringify(this.formItem))))
+      this.$store.dispatch(
+        'app/setHistory',
+        Object.assign(JSON.parse(JSON.stringify(this.formItem)))
+      )
     },
     updateApp () {
       if (this.disabledTap) return
@@ -129,7 +144,14 @@ export default {
         })
         return
       }
-      syncUniApp(uniUi.history[uniUi.select].lable, uniApp.history[uniApp.select].lable, this)
+      syncUniApp(
+        uniUi.history[uniUi.select].lable,
+        uniApp.history[uniApp.select].lable,
+        this
+      )
+    },
+    updateDocument () {
+      console.log('----')
     },
     open (item) {
       const uniUi = this.historyList[0]
@@ -153,7 +175,28 @@ export default {
         })
         return
       }
-      syncUniUi(uniUi.history[uniUi.select].lable, extLocal.history[extLocal.select].lable, Object.assign({}, item, obj), this)
+      syncUniUi(
+        uniUi.history[uniUi.select].lable,
+        extLocal.history[extLocal.select].lable,
+        Object.assign({}, item, obj),
+        this
+      )
+    },
+    updateUniUi (generate) {
+      const uniUi = this.historyList[0]
+      const extLocal = this.historyList[3]
+      if (!extLocal.history[extLocal.select].lable) {
+        this.$Notice.error({
+          title: '请配置本地插件包地址'
+        })
+        return
+      }
+      completeUuiUi(
+        uniUi.history[uniUi.select].lable,
+        extLocal.history[extLocal.select].lable,
+        generate,
+        this
+      )
     },
     openWindows (href) {
       this.$electron.shell.openExternal(href)

@@ -1,3 +1,4 @@
+/* eslint-disable vue/no-parsing-error */
 const path = require('path')
 const fs = require('fs-extra')
 
@@ -14,9 +15,11 @@ class Utils {
   constructor () {
     this.disabledTap = true
   }
-  init (uniuiPath, vue) {
+  init (uniuiPath, uniappPath) {
     this.path = {
       tempCatalog: path.join(uniuiPath, 'temp', 'build_ext'),
+      // uni-ui 本地完整地址
+      uniUiPagesSrcFiles: path.join(uniuiPath, 'src'),
       exampleCatalog: path.join(uniuiPath, 'temp', 'example'),
       // uni-ui 本地 static 完整地址
       uniUiStaticFile: path.join(uniuiPath, 'src', 'static'),
@@ -30,8 +33,22 @@ class Utils {
       // uni-ui 全局 sass 变量文件
       uniScss: path.join(uniuiPath, 'src', 'uni.scss')
     }
-    // 获取 vue 示例
-    this.vue = vue
+
+    if (uniappPath) {
+      Object.assign(this.path, {
+        // hello uni-app 本地 static 完整地址
+        outputStaticFile: path.join(uniappPath, 'static'),
+        // hello uni-app 组件地址
+        uniAppComponentsFiles: path.join(uniappPath, 'components'),
+        uniAppPagesJson: path.join(uniappPath, 'pages.json'),
+        //  hello uni-app 示例页面
+        outputExampleFiles: path.join(uniappPath, 'pages', 'extUI'),
+        // hello uni-app tabbar 示例页面
+        outputTabBarFile: path.join(uniappPath, 'pages', 'tabBar', 'extUI', 'extUI.nvue'),
+        // tabbar 输入 示例页面
+        inputTabBarFile: path.join(uniuiPath, 'temp', 'extUI.nvue')
+      })
+    }
   }
   /**
    * 读取文件

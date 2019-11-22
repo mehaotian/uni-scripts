@@ -4,7 +4,6 @@ let JSZIP = require('jszip')
 
 // 读取目录及文件
 const readDir = (obj, nowPath) => {
-  console.log('读取目录', nowPath)
   let files = fs.readdirSync(nowPath) // 读取目录中的所有文件及文件夹（同步操作）
   files.forEach((fileName, index) => { // 遍历检测目录中的文件
     let fillPath = nowPath + '/' + fileName
@@ -22,7 +21,6 @@ const readDir = (obj, nowPath) => {
 const startZIP = (inputPath, outPath, name) => {
   let zip = new JSZIP()
   readDir(zip, inputPath)
-  console.log('-------------')
   return new Promise((resolve, reject) => {
     zip.generateAsync({ // 设置压缩格式，开始打包
       type: 'nodebuffer', // nodejs用

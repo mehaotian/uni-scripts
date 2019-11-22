@@ -1,19 +1,32 @@
+import {Modal, Notice} from 'iview'
+import syncComponents from './lib/components'
+import syncPages from './lib/pages'
+import syncPagesJson from './lib/pagesjson'
+const Util = require('../lib/utils')
 
-const Util = require('./lib/utils')
-const syncComponents = require('./lib/components')
-const syncPages = require('./lib/pages')
-const syncPagesJson = require('./lib/pagesjson')
-
-const syncUniApp = (uniuiPath, uniappPath, vue) => {
+const syncUniApp = (uniuiPath, uniappPath) => {
   const util = Util.getInstance()
-  util.init(uniuiPath, uniappPath, vue)
-  util.vue.$Message.loading({
-    content: '开始同步组件'
+  util.init(uniuiPath, uniappPath)
+
+  Modal.confirm({
+    title: '提示',
+    content: '是否开始同步 uni-ui 到 hello uni-app',
+    loading: true,
+    onOk: () => {
+      Promise.all([syncComponents(util), syncPages(util), syncPagesJson(util)]).then((result) => {
+        console.log('同步到 hello uni-app 成功')
+        Modal.remove()
+        Notice.success({
+          title: '提示',
+          desc: '同步到 hello uni-app 成功'
+        })
+        util.exists('tempCatalog').then(() => {
+          console.log('删除 temp 临时目录')
+        })
+      })
+    }
   })
   // 同步组件
-  syncComponents(util)
-  syncPages(util)
-  syncPagesJson(util)
 }
 
-module.exports = syncUniApp
+export default syncUniApp
