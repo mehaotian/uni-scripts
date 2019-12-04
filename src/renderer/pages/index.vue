@@ -5,7 +5,15 @@
     <Button icon="ios-search" @click="configFn">同步配置</Button>
     <Button v-if="uniList.length > 0" icon="ios-search" @click="updateDocument">更新到文档</Button>
     <Button v-if="uniList.length > 0" icon="ios-search" @click="updateApp">更新到hello uni-app</Button>
-    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateUniUi(false)">更新到uni-ui到插件市场</Button>
+    <Dropdown v-if="uniList.length > 0" style="margin-left: 20px" @on-click="updateUniUi(false,$event)">
+        <Button  icon="ios-search">更新到uni-ui到插件市场</Button>
+        <!-- @click="updateUniUi(false)" -->
+        <DropdownMenu slot="list">
+            <DropdownItem :name="0">更新到插件市场</DropdownItem>
+            <DropdownItem :name="1">更新到 npm</DropdownItem>
+            <DropdownItem :name="2">插件市场 & npm</DropdownItem>
+        </DropdownMenu>
+    </Dropdown>
     <Button v-if="uniList.length > 0" icon="ios-search" @click="updateUniUi(true)">生成uni-ui插件包</Button>
 
     <!-- <Button icon="ios-search">更新到插件市场</Button> -->
@@ -182,7 +190,7 @@ export default {
         this
       )
     },
-    updateUniUi (generate) {
+    updateUniUi (generate, event) {
       const uniUi = this.historyList[0]
       const extLocal = this.historyList[3]
       if (!extLocal.history[extLocal.select].lable) {
@@ -191,10 +199,12 @@ export default {
         })
         return
       }
+      // console.log(generate, event)
       completeUuiUi(
         uniUi.history[uniUi.select].lable,
         extLocal.history[extLocal.select].lable,
         generate,
+        event,
         this
       )
     },

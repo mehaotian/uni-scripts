@@ -6,6 +6,7 @@ const Util = require('../lib/utils')
 const ZIP = require('@/build/lib/jszip')
 const crypto = require('crypto')
 const request = require('request')
+const exec = require('child_process').exec
 
 const syncComponents = (util, extLocalPath, generate) => {
   const outUniAppPath = util.pathjoin('tempCatalog', 'uni-ui')
@@ -109,17 +110,106 @@ const syncComponents = (util, extLocalPath, generate) => {
     })
   })
 }
-const syncUniUi = (uniuiPath, extLocalPath, generate) => {
+function start (uniuiPath, fn) {
+  // 任何你期望执行的cmd命令，ls都可以
+  let cmdStr1 = 'npm run build:lib'
+  let cmdPath = uniuiPath
+  // 子进程名称
+  let workerProcess
+  runExec(cmdStr1)
+  function runExec (cmdStr) {
+    workerProcess = exec(cmdStr, { cwd: cmdPath })
+    // 打印正常的后台可执行程序输出
+    workerProcess.stdout.on('data', function (data) {
+      // console.log(data)
+      if (data !== '0') {
+        Notice.error({
+          title: '提示',
+          desc: 'npm 发布错误，错误码：' + data
+        })
+        Modal.remove()
+        console.error('npm 发布错误，错误码为：' + data)
+      } else {
+        if (!fn) {
+          Notice.success({
+            title: '提示',
+            desc: 'npm success'
+          })
+        } else {
+          fn()
+        }
+        console.log(data)
+      }
+    })
+    // 打印错误的后台可执行程序输出
+    workerProcess.stderr.on('data', function (data) {
+      console.log('stderr: ' + data)
+    })
+    // 退出之后的输出
+    workerProcess.on('close', function (code) {
+      console.log(code)
+      if (code === 0) {
+        Notice.success({
+          title: '提示',
+          desc: 'npm success'
+        })
+      } else {
+        Modal.remove()
+        Notice.error({
+          title: '提示',
+          desc: 'npm 发布错误，错误码为：' + code
+        })
+        console.error('npm 发布错误，错误码为：' + code)
+      }
+    })
+  }
+}
+
+const syncUniUi = (uniuiPath, extLocalPath, generate, event) => {
   const util = Util.getInstance()
   util.init(uniuiPath)
-  Modal.confirm({
-    title: '提示',
-    content: generate ? '是否生成本地插件包' : '是否上传插件市场？',
-    loading: true,
-    onOk: () => {
-      syncComponents(util, extLocalPath, generate)
+  if (generate) {
+    Modal.confirm({
+      title: '提示',
+      content: '是否生成本地插件包',
+      loading: true,
+      onOk: () => {
+        syncComponents(util, extLocalPath, generate)
+      }
+    })
+  } else {
+    console.log(event)
+    if (event === 0) {
+      Modal.confirm({
+        title: '提示',
+        content: '是否上传插件市场？',
+        loading: true,
+        onOk: () => {
+          syncComponents(util, extLocalPath, generate)
+        }
+      })
+    } else if (event === 1) {
+      Modal.confirm({
+        title: '提示',
+        content: '是否更新到 npm？',
+        loading: true,
+        onOk: () => {
+          start(uniuiPath)
+        }
+      })
+    } else if (event === 2) {
+      Modal.confirm({
+        title: '提示',
+        content: '是否同时上传插件市场和 npm？',
+        loading: true,
+        onOk: () => {
+          start(uniuiPath, () => {
+            syncComponents(util, extLocalPath, generate)
+          })
+        }
+      })
     }
-  })
+  }
 }
 
 export default syncUniUi
