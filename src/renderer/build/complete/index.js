@@ -121,40 +121,23 @@ function start (uniuiPath, fn) {
     workerProcess = exec(cmdStr, { cwd: cmdPath })
     // 打印正常的后台可执行程序输出
     workerProcess.stdout.on('data', function (data) {
-      // console.log(data)
-      if (data !== '0') {
-        Notice.error({
-          title: '提示',
-          desc: 'npm 发布错误，错误码：' + data
-        })
-        Modal.remove()
-        console.error('npm 发布错误，错误码为：' + data)
-      } else {
-        if (!fn) {
-          Notice.success({
-            title: '提示',
-            desc: 'npm success'
-          })
-        } else {
-          fn()
-        }
-        console.log(data)
-      }
+      console.log(data)
     })
     // 打印错误的后台可执行程序输出
     workerProcess.stderr.on('data', function (data) {
-      console.log('stderr: ' + data)
+      console.error('stderr: ' + data)
     })
     // 退出之后的输出
     workerProcess.on('close', function (code) {
       console.log(code)
+      Modal.remove()
       if (code === 0) {
         Notice.success({
           title: '提示',
-          desc: 'npm success'
+          desc: 'npm 同步成功，查看控制台是否失败'
         })
+        typeof (fn) === 'function' && fn()
       } else {
-        Modal.remove()
         Notice.error({
           title: '提示',
           desc: 'npm 发布错误，错误码为：' + code
