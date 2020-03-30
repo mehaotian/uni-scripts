@@ -1,4 +1,5 @@
-// const syncDocs = (uniuiPath, extLocalPath, options, vue) => {
+const syncDocs = (uniuiPath, extLocalPath, options, vue) => {
+  console.log(1111)
 //   const util = Util.getInstance()
 //   util.init(uniuiPath, vue)
 //   util.vue.$Modal.confirm({
@@ -6,9 +7,9 @@
 //     content: options.generate ? '是否生成本地插件包' : '是否上传插件市场？',
 //     loading: true,
 //     onOk: () => {
-//       syncComponents(util, extLocalPath, options)
+//     //   syncComponents(util, extLocalPath, options)
 //     }
 //   })
-// }
+}
 
-// export default syncDocs
+export default syncDocs

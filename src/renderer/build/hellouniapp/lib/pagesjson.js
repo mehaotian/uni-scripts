@@ -24,7 +24,7 @@ const syncPageJson = (util) => {
       indent_with_tabs: true
     })
     util.outputFile('uniAppPagesJson', outputPagesJsonData).then(() => {
-      console.log('pages.json 同步成功')
+      console.log('---- 同步pages.json完成 ----')
       resolve()
     })
   })

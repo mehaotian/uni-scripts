@@ -80,7 +80,7 @@ class Utils {
    */
   copy (frompath, topath) {
     return new Promise((resolve, reject) => {
-      console.log(this.path[frompath] || frompath, this.path[topath] || topath)
+      // console.log(this.path[frompath] || frompath, this.path[topath] || topath)
       fs.copy(this.path[frompath] || frompath, this.path[topath] || topath, (err) => {
         if (err) {
           reject(new Error(err))
@@ -152,7 +152,7 @@ class Utils {
               reject(new Error(err))
               return
             }
-            console.log('---删除目录')
+            // console.log('---删除目录')
             resolve()
           })
         } else {

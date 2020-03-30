@@ -2,4 +2,4 @@
 export const getFiles = require('./getFiles')
 export const syncUniApp = require('@/build/hellouniapp').default
 export const syncUniUi = require('@/build/ext').default
-export const completeUuiUi = require('@/build/complete').default
+export const completeUniUi = require('@/build/complete').default

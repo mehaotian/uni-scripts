@@ -1,6 +1,6 @@
 <template>
   <div class="app-mian">
-    <router-view :key="key">qqqqq</router-view>
+    <router-view :key="key"></router-view>
   </div>
 </template>
 

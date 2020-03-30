@@ -1,16 +1,24 @@
 <template>
   <div class="tabbar">
     <div class="tabbar-box">
-      <Menu class="menu" mode="horizontal" active-name="1">
+      <!-- <Menu class="menu" mode="horizontal" active-name="1">
         <MenuItem name="1" to="/">
           <Icon type="ios-paper"/>uni-ui
         </MenuItem>
         <MenuItem name="2" to="/shuttering">
           <Icon type="ios-people"/>模板
         </MenuItem>
-      </Menu>
+      </Menu>-->
+      <a-menu v-model="current" mode="horizontal">
+        <a-menu-item :key="0">
+          <a-icon type="file-text" />uni-ui
+        </a-menu-item>
+        <a-menu-item :key="1" >
+          <a-icon type="pic-left" />模板
+        </a-menu-item>
+      </a-menu>
       <div class="tabbar-button">
-        <i-button type="info" @click="update">检查更新</i-button>
+        <a-button type="info" @click="update">检查更新</a-button>
       </div>
     </div>
     <div class="app-main-box">
@@ -23,7 +31,8 @@
 import appMain from './appMain.vue'
 import pkg from '../../../package.json'
 const version = pkg.version
-const release = 'https://api.github.com/repos/mehaotian/uni-scripts/releases/latest'
+const release =
+  'https://api.github.com/repos/mehaotian/uni-scripts/releases/latest'
 const downloadUrl = 'https://github.com/mehaotian/uni-scripts/releases/latest'
 export default {
   name: 'Tabbar',
@@ -31,7 +40,9 @@ export default {
     appMain
   },
   data () {
-    return {}
+    return {
+      current: [0]
+    }
   },
   methods: {
     async update () {
@@ -40,18 +51,22 @@ export default {
         const latest = res.data.name // 获取版本号
         const result = this.compareVersion2Update(version, latest) // 比对版本号，如果本地版本低于远端则更新
         if (result) {
-          this.$electron.remote.dialog.showMessageBox({
-            type: 'info',
-            title: '发现新版本',
-            buttons: ['Yes', 'No'],
-            message: '发现新版本，更新了更多功能，是否去下载最新的版本？',
-            checkboxLabel: '以后不再提醒',
-            checkboxChecked: false
-          }, (res, checkboxChecked) => {
-            if (res === 0) { // if selected yes
-              this.$electron.shell.openExternal(downloadUrl)
+          this.$electron.remote.dialog.showMessageBox(
+            {
+              type: 'info',
+              title: '发现新版本',
+              buttons: ['Yes', 'No'],
+              message: '发现新版本，更新了更多功能，是否去下载最新的版本？',
+              checkboxLabel: '以后不再提醒',
+              checkboxChecked: false
+            },
+            (res, checkboxChecked) => {
+              if (res === 0) {
+                // if selected yes
+                this.$electron.shell.openExternal(downloadUrl)
+              }
             }
-          })
+          )
         } else {
           this.$electron.remote.dialog.showMessageBox({
             type: 'info',

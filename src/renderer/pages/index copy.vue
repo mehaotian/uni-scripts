@@ -1,97 +1,70 @@
 <template>
   <div class="wrapper">
-    <a-spin :spinning="spinning">
-      <a-button class="header-button" ghost type="danger" icon="control" @click="configFn">同步配置</a-button>
-      <a-button-group>
-        <a-button v-if="uniList.length > 0" icon="file-text" @click="updateDocument">更新到文档</a-button>
-        <a-button v-if="uniList.length > 0" icon="folder" @click="updateApp">更新到hello uni-app</a-button>
-      </a-button-group>
+    <Button icon="ios-search" @click="configFn">同步配置</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateDocument">更新到文档</Button>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateApp">更新到hello uni-app</Button>
+    <Dropdown
+      v-if="uniList.length > 0"
+      style="margin-left: 20px"
+      @on-click="updateUniUi(false,$event)"
+    >
+      <Button icon="ios-search">更新到uni-ui到插件市场</Button>
+      <!-- @click="updateUniUi(false)" -->
+      <DropdownMenu slot="list">
+        <DropdownItem :name="0">更新到插件市场</DropdownItem>
+        <DropdownItem :name="1">更新到 npm</DropdownItem>
+        <DropdownItem :name="2">插件市场 & npm</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Button v-if="uniList.length > 0" icon="ios-search" @click="updateUniUi(true)">生成uni-ui插件包</Button>
 
-      <a-dropdown :loading="true" v-if="uniList.length > 0" style="margin-left: 20px">
-        <a-menu slot="overlay" @click="updateUniUi">
-          <a-menu-item :key="0">
-            <a-icon type="layout" />生成uni-ui插件包
-          </a-menu-item>
-          <a-menu-item :key="1">
-            <a-icon type="profile" />更新到插件市场
-          </a-menu-item>
-          <a-menu-item :key="2">
-            <a-icon type="file-add" />更新到 npm
-          </a-menu-item>
-          <a-menu-item :key="3">
-            <a-icon type="project" />插件市场 & npm
-          </a-menu-item>
-        </a-menu>
-        <a-button style="margin-left: 8px">
-          uni-ui整包操作
-          <a-icon type="down" />
-        </a-button>
-      </a-dropdown>
-    </a-spin>
-
-    <!-- <a-button v-if="uniList.length > 0" icon="ios-search" @click="updateUniUi(true)">生成uni-ui插件包</a-button> -->
-
+    <!-- <Button icon="ios-search">更新到插件市场</Button> -->
     <div v-if="uniList.length > 0" class="uni-ui__card">
-      <a-card class="uni-ui__card-warp" v-for="(item,index) in uniList" :key="index">
+      <Card class="uni-ui__card-warp" v-for="(item,index) in uniList" :key="index">
         <div slot="title" class="uni-ui__card-box">
           <p class="uni-ui__card-box-content">
             <span class="content-href" @click="openWindows(item.path)">{{item.name}} {{item.desc}}</span>
-            <a-tag class="box-badge" color="#f50">{{item.edition}}</a-tag>
+            <Badge :text="item.edition" class="box-badge"></Badge>
           </p>
-          <div>
-            <a-button icon="profile"  @click="open(item)">更新到插件市场</a-button>
-            <a-button
-              icon="profile"
-              type="primary"
-              class="button-right"
-              @click="generate(item)"
-            >生成插件包</a-button>
-          </div>
+          <Button @click="open(item)">更新到插件市场</Button>
+          <Button class="button-right" type="primary" @click="generate(item)">生成插件包</Button>
         </div>
         <div v-if="item.update_log" v-html="item.update_log"></div>
         <div v-else>无最新更新记录</div>
-      </a-card>
+      </Card>
     </div>
     <div v-else class="uni-ui__card-no-path">请配置 uni-ui 的正确路径</div>
-    <a-modal
-      :visible="modal"
-      title="uni-ui 同步配置项"
-      @ok="ok"
-      @cancel="handleCancel"
-      width="700px"
-      cancelText="取消"
-      okText="确认"
-    >
+    <Modal v-model="modal" fullscreen title="uni-ui 同步配置项" @on-ok="ok">
       <div>
-        <a-form :label-width="260">
-          <a-form-item :label="item.name" v-for="(item,index) in formItem" :key="index">
-            <a-row>
-              <a-col span="20">
-                <a-select
+        <Form :label-width="150">
+          <FormItem :label="item.name" v-for="(item,index) in formItem" :key="index">
+            <Row>
+              <Col span="20">
+                <Select
                   v-model="item.select"
                   not-found-text="请选择目录"
-                  @change="selectChange($event,item,index)"
+                  @on-change="selectChange($event,item,index)"
                 >
-                  <a-select-option
+                  <Option
                     :value="history.value"
                     v-for="(history , idx) in item.history"
                     :key="idx"
-                  >{{history.lable}}</a-select-option>
-                </a-select>
-              </a-col>
-              <a-col span="2" offset="1">
-                <a-button @click="openFilesFn(item,index)">选择目录</a-button>
-              </a-col>
-            </a-row>
-          </a-form-item>
-        </a-form>
+                  >{{history.lable}}</Option>
+                </Select>
+              </Col> 
+              <Col span="2" offset="1">
+                <Button @click="openFilesFn(item,index)">选择目录</Button>
+              </Col>
+            </Row>
+          </FormItem>
+        </Form>
       </div>
-    </a-modal>
+    </Modal>
   </div>
 </template>
 
 <script>
-import { getFiles, syncUniApp, syncUniUi, completeUniUi } from '@/utils'
+import { getFiles, syncUniApp, syncUniUi, completeUuiUi } from '@/utils'
 import { mapGetters } from 'vuex'
 // const fs = require('fs')
 export default {
@@ -100,7 +73,6 @@ export default {
     return {
       uniList: [],
       modal: false,
-      spinning: false,
       formItem: [
         {
           name: '本地 uni-ui 地址',
@@ -137,6 +109,7 @@ export default {
     }
     const uniUi = this.formItem[0]
     this.uniList = getFiles(uniUi.history[uniUi.select].lable)
+    console.log(this.formItem)
   },
   methods: {
     configFn () {
@@ -146,10 +119,6 @@ export default {
       console.log('确定')
       const uniUi = this.historyList[0]
       this.uniList = getFiles(uniUi.history[uniUi.select].lable)
-      this.modal = false
-    },
-    handleCancel () {
-      this.modal = false
     },
     selectChange (e, item, index) {
       console.log(e, item, index)
@@ -185,21 +154,11 @@ export default {
         })
         return
       }
-      console.log(uniApp.history[uniApp.select].lable)
-      this.spinning = true
       syncUniApp(
         uniUi.history[uniUi.select].lable,
         uniApp.history[uniApp.select].lable,
         this
       )
-        .then(() => {
-          console.log('成功的回调')
-          this.spinning = false
-        })
-        .catch(err => {
-          console.log('取消了回调', err)
-          this.spinning = false
-        })
     },
     updateDocument () {
       console.log('----')
@@ -220,7 +179,6 @@ export default {
       }
       const uniUi = this.historyList[0]
       const extLocal = this.historyList[3]
-      console.log(extLocal.history[extLocal.select].lable)
       if (!extLocal.history[extLocal.select].lable) {
         this.$Notice.error({
           title: '请配置本地插件包地址'
@@ -234,24 +192,23 @@ export default {
         this
       )
     },
-    updateUniUi (event) {
-      console.log(event)
+    updateUniUi (generate, event) {
       const uniUi = this.historyList[0]
       const extLocal = this.historyList[3]
       if (!extLocal.history[extLocal.select].lable) {
         this.$Notice.error({
           title: '请配置本地插件包地址'
         })
+        return
       }
-      this.spinning = true
       // console.log(generate, event)
-      completeUniUi(
+      completeUuiUi(
         uniUi.history[uniUi.select].lable,
         extLocal.history[extLocal.select].lable,
-        event
-      ).then(() => {
-        this.spinning = false
-      })
+        generate,
+        event,
+        this
+      )
     },
     openWindows (href) {
       this.$electron.shell.openExternal(href)
@@ -264,9 +221,6 @@ export default {
 .wrapper {
   // height: 1000px;
   // border: 1px red solid;
-  .header-button {
-    margin-right: 10px;
-  }
 }
 .uni-ui {
   &__card {
@@ -285,7 +239,6 @@ export default {
       &-content {
         display: flex;
         align-items: center;
-        margin-bottom: 0;
         .content-href {
           color: #77cbea;
           cursor: pointer;
