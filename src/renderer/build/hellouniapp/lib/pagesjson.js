@@ -12,7 +12,7 @@ const syncPageJson = (util) => {
     }
 
     examplePages.forEach(value => {
-      value.path = value.path.replace('pages/', '')
+      value.path = value.path.replace('pages/vue/', '')
       exampleSubPackages.pages.push(value)
     })
     // 替换uni-ui 的pages.json 到helli uni-app pages.json 的正确位置

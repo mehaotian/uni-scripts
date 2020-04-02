@@ -4,15 +4,18 @@ const glob = require('glob')
 const beautify = require('js-beautify')
 const postCss = require('@/build/lib/postcss')
 const fs = require('fs-extra')
+// TODO 需要同步 vue 页面 还是 nvue 页面
+const pageName = 'nvue'
 
 const syncPage = (util) => {
   return new Promise((resolve) => {
-    let pagesReaddirFiles = glob.sync(util.path.uniUiPagesFiles + '/**/*.{nvue,vue}')
+    let vuePage = util.pathjoin(util.path.uniUiPagesFiles, pageName)
+    let pagesReaddirFiles = glob.sync(vuePage + '/**/*.{nvue,vue}')
     // 开始之前先删除 uni-app 目录的 extUI 目录
     return util.exists('outputExampleFiles').then(() => {
       pagesReaddirFiles.reduce((promise, name) => {
         return promise.then(() => {
-          let relativePath = path.relative(util.path.uniUiPagesFiles, name)
+          let relativePath = path.relative(path.join(util.path.uniUiPagesFiles, pageName), name)
           let dest = util.pathjoin('outputExampleFiles', relativePath)
           // 处理 extUI.vue 页面
           if (~relativePath.indexOf('index.vue') || ~relativePath.indexOf('index.nvue')) {

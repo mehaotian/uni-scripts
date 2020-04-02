@@ -30,8 +30,9 @@ const syncComponents = (util, extLocalPath, options) => {
   })
 
   const outUniAppPath = util.pathjoin('tempCatalog', `uni-${filesData[filesIndex].url}`)
-  const inputIndexPages = util.pathjoin('uniUiPagesFiles', filesData[filesIndex].url)
+  const inputIndexPages = util.pathjoin('uniUiPagesFiles', 'vue', filesData[filesIndex].url)
   const outIndexPages = util.pathjoin(outUniAppPath, 'pages', filesData[filesIndex].url)
+  console.log(outIndexPages)
   console.log(filesIndex)
   // 遍历当前 临时目录里的所有组件
   return util.exists(util.path.tempCatalog).then((exists) => {
